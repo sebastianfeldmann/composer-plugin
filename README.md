@@ -25,3 +25,4 @@ Plugin version: 1.0.3
 - reading version from non php/code files work
 - detecting the installed version via composer works as well
 - detecting the installed version in composer 2 is even much simpler
+- if you use pre-install/update events you can check is the version actually changed
