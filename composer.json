@@ -1,0 +1,18 @@
+{
+  "name": "sebastianfeldmann/composer-plugin",
+  "type": "composer-plugin",
+  "autoload": {
+    "psr-4": {
+      "SebastianFeldmann\\Composer\\": "src/"
+    }
+  },
+  "require": {
+    "composer-plugin-api": "^1.1"
+  },
+  "require-dev": {
+    "composer/composer": "*"
+  },
+  "extra": {
+    "class": "SebastianFeldmann\\Composer\\Plugin"
+  }
+}
