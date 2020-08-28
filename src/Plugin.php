@@ -15,7 +15,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
 {
     private const NAME = 'sebastianfeldmann/composer-plugin';
 
-    private const VERSION = '1.0.4';
+    private const VERSION = '1.0.5';
 
     private Composer $composer;
 
