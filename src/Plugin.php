@@ -9,9 +9,12 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\Capable;
+use http\Exception\RuntimeException;
 
 class Plugin implements PluginInterface, EventSubscriberInterface, Capable
 {
+    private const NAME = 'sebastianfeldmann/composer-plugin';
+
     private Composer $composer;
 
     private IOInterface $io;
@@ -32,15 +35,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
     public function postInstall(): void
     {
         $this->io->write("postInstall is triggered");
-        $this->io->write("Plugin version file: " . $this->readPluginVersion());
-
-        print_r($this->composer->getPackage());
+        $this->io->write("Plugin version file: " . $this->readVersionFile());
+        $this->io->write("Plugin version: " . $this->detectInstalledVersion($this->composer->getLocker()));
     }
 
     public function postUpdate(): void
     {
         $this->io->write("postUpdate is triggered");
-        $this->io->write("Plugin version file: " . $this->readPluginVersion());
+        $this->io->write("Plugin version file: " . $this->readVersionFile());
+        $this->io->write("Plugin version: " . $this->detectInstalledVersion($this->composer->getLocker()));
+
     }
 
     public static function getSubscribedEvents()
@@ -51,8 +55,21 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
         ];
     }
 
-    private function readPluginVersion(): string
+    private function readVersionFile(): string
     {
         return trim(file_get_contents(__DIR__ . '/../version.info'));
+    }
+
+    private function detectInstalledVersion($locker)
+    {
+        $lockData = $locker->getLockData();
+        $packages = array_merge($lockData['packages'], $lockData['packages-dev']);
+
+        foreach ($packages as $package) {
+            if ($package['name'] === self::NAME) {
+                return $package['version'];
+            }
+        }
+        throw new RuntimeException('version could not be detected');
     }
 }
