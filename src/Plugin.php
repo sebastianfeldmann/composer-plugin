@@ -15,11 +15,15 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
 {
     private const NAME = 'sebastianfeldmann/composer-plugin';
 
-    private const VERSION = '1.0.3';
+    private const VERSION = '1.0.4';
 
     private Composer $composer;
 
     private IOInterface $io;
+
+    private string $previousFileVersion;
+
+    private string $previousPackageVersion;
 
     public function activate(Composer $composer, IOInterface $io)
     {
@@ -34,6 +38,18 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
         ];
     }
 
+    public function preInstall(): void
+    {
+        $this->io->write("preInstall is triggered");
+        $this->check();
+    }
+
+    public function preUpdate(): void
+    {
+        $this->io->write("preUpdate is triggered");
+        $this->check();
+    }
+
     public function postInstall(): void
     {
         $this->io->write("postInstall is triggered");
@@ -46,17 +62,25 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
         $this->change();
     }
 
-    public function change(): void
+    private function check(): void
+    {
+        $this->previousFileVersion   = $this->readVersionFile();
+        $this->previousPackageVersion= $this->readComposerVersion($this->composer->getLocker());
+    }
+
+    private function change(): void
     {
         $this->io->write("Plugin version constant: " . self::VERSION);
-        $this->io->write("Plugin version file: " . $this->readVersionFile());
-        $this->io->write("Plugin version: " . $this->detectInstalledVersion($this->composer->getLocker()));
+        $this->io->write("Plugin version file: " . $this->previousFileVersion . " => " . $this->readVersionFile());
+        $this->io->write("Plugin version: " . $this->previousPackageVersion . " => " . $this->readComposerVersion($this->composer->getLocker()));
 
     }
 
     public static function getSubscribedEvents()
     {
         return [
+            'pre-update-cmd'   => 'preUpdate',
+            'pre-install-cmd'  => 'preInstall',
             'post-install-cmd' => 'postInstall',
             'post-update-cmd'  => 'postUpdate',
         ];
@@ -67,7 +91,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
         return trim(file_get_contents(__DIR__ . '/../version.info'));
     }
 
-    private function detectInstalledVersion($locker)
+    private function readComposerVersion($locker): string
     {
         $lockData = $locker->getLockData();
         $packages = array_merge($lockData['packages'], $lockData['packages-dev']);
