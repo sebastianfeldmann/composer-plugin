@@ -15,6 +15,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
 {
     private const NAME = 'sebastianfeldmann/composer-plugin';
 
+    private const VERSION = '1.0.2';
+
     private Composer $composer;
 
     private IOInterface $io;
@@ -35,13 +37,18 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable
     public function postInstall(): void
     {
         $this->io->write("postInstall is triggered");
-        $this->io->write("Plugin version file: " . $this->readVersionFile());
-        $this->io->write("Plugin version: " . $this->detectInstalledVersion($this->composer->getLocker()));
+        $this->change();
     }
 
     public function postUpdate(): void
     {
         $this->io->write("postUpdate is triggered");
+        $this->change();
+    }
+
+    public function change(): void
+    {
+        $this->io->write("Plugin version constant: " . self::VERSION);
         $this->io->write("Plugin version file: " . $this->readVersionFile());
         $this->io->write("Plugin version: " . $this->detectInstalledVersion($this->composer->getLocker()));
 
